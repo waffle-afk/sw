@@ -1,0 +1,90 @@
+CREATE DATABASE agencia_viajes;
+USE agencia_viajes;
+
+-- Tabla de usuarios
+CREATE TABLE usuarios (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    correo VARCHAR(100),
+    password VARCHAR(255)
+);
+
+CREATE USER 'nuevo_usuario'@'localhost' IDENTIFIED BY 'contraseña';
+GRANT ALL PRIVILEGES ON *.* TO 'nuevo_usuario'@'localhost';
+FLUSH PRIVILEGES;
+
+-- Inserta un usuario de prueba
+INSERT INTO usuarios (nombre, correo, password) VALUES ('Admin', 'admin@example.com', '12345');
+
+ create TABLE  vuelos (
+    id_vuelo INT AUTO_INCREMENT PRIMARY KEY,
+    origen VARCHAR(100),
+    destino VARCHAR(100),
+    fecha DATE,
+    precio int,
+    hora_salida time
+);
+
+INSERT INTO vuelos (origen, destino, fecha, precio, hora_salida) VALUES
+('Madrid', 'Barcelona', '2023-11-15', 150, '08:00:00'),
+('Barcelona', 'Madrid', '2023-11-16', 140, '14:30:00'),
+('Londres', 'París', '2023-11-20', 200, '19:45:00');
+
+-- Insertar vuelos de ejemplo
+INSERT INTO vuelos (origen, destino, fecha, hora_salida, precio) VALUES
+('Madrid', 'Barcelona', '2023-11-15', '08:00:00', 150),
+('Barcelona', 'Madrid', '2023-11-16', '14:30:00', 140),
+('Londres', 'París', '2023-11-20', '19:45:00', 200),
+('Nueva York', 'Los Ángeles', '2023-12-01', '10:15:00', 300),
+('Tokio', 'Bangkok', '2023-12-05', '06:00:00', 250),
+('Roma', 'Berlín', '2023-12-10', '12:45:00', 180),
+('París', 'Londres', '2023-12-15', '21:30:00', 220),
+('Dubái', 'Singapur', '2023-12-20', '09:00:00', 400),
+('Sídney', 'Melbourne', '2023-12-25', '07:15:00', 100),
+('Moscú', 'Estambul', '2023-12-30', '16:20:00', 160);
+
+
+CREATE TABLE reservas (
+    id_reserva INT AUTO_INCREMENT PRIMARY KEY,
+    id_vuelo INT,
+    fecha_reserva TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_vuelo) REFERENCES vuelos(id_vuelo)
+);
+
+-- Crear la tabla de hoteles
+CREATE TABLE  hoteles (
+    id_hotel INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    ciudad VARCHAR(100),
+    fecha_disponible DATE,
+    precio_noche INT
+);
+
+-- Insertar datos de ejemplo en la tabla `hoteles`
+INSERT INTO hoteles (nombre, ciudad, fecha_disponible, precio_noche) VALUES
+('Hotel Madrid', 'Madrid', '2023-11-15', 100),
+('Hotel Barcelona', 'Barcelona', '2023-11-16', 120),
+('Hotel París', 'París', '2023-11-20', 150);
+
+-- Insertar hoteles de ejemplo
+INSERT INTO hoteles (nombre, ciudad, fecha_disponible, precio_noche) VALUES
+('Hotel Madrid Central', 'Madrid', '2023-11-15', 100),
+('Gran Hotel Barcelona', 'Barcelona', '2023-11-16', 120),
+('Royal Palace Paris', 'París', '2023-11-20', 150),
+('Luxury Inn Nueva York', 'Nueva York', '2023-12-01', 250),
+('Oriental Bangkok', 'Bangkok', '2023-12-05', 180),
+('Berlin Grand Hotel', 'Berlín', '2023-12-10', 200),
+('London Crown Plaza', 'Londres', '2023-12-15', 220),
+('Dubai Sands Resort', 'Dubái', '2023-12-20', 300),
+('Sydney Harbour View', 'Sídney', '2023-12-25', 280),
+('Moscow Red Star Inn', 'Moscú', '2023-12-30', 130);
+
+-- Crear la tabla de reservas de hoteles
+CREATE TABLE  reservas_hoteles (
+    id_reserva_hotel INT AUTO_INCREMENT PRIMARY KEY,
+    id_hotel INT,
+    noches INT,
+    fecha_reserva TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_hotel) REFERENCES hoteles(id_hotel)
+);
+
