@@ -1,5 +1,3 @@
-# reservations.py
-
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -16,7 +14,7 @@ def load_user_reservations(tree):
     try:
         # Consultar reservas de vuelos
         query_flights = """
-        SELECT r.id_reserva, 'Vuelo', v.origen, v.destino, v.fecha, v.precio
+        SELECT r.id_reserva, 'Vuelo', v.origen, v.destino, CONCAT(r.num_pasajeros, ' pasajeros'), r.precio_total
         FROM reservas r
         JOIN vuelos v ON r.id_vuelo = v.id_vuelo
         """
@@ -25,7 +23,7 @@ def load_user_reservations(tree):
 
         # Consultar reservas de hoteles
         query_hotels = """
-        SELECT rh.id_reserva_hotel, 'Hotel', h.nombre, h.ciudad, rh.noches, (h.precio_noche * rh.noches)
+        SELECT rh.id_reserva_hotel, 'Hotel', h.nombre, h.ciudad, CONCAT(rh.noches, ' noches'), (h.precio_noche * rh.noches)
         FROM reservas_hoteles rh
         JOIN hoteles h ON rh.id_hotel = h.id_hotel
         """
@@ -78,12 +76,27 @@ def delete_flight_reservation(reservation_id):
     cursor = connection.cursor()
 
     try:
-        query = "DELETE FROM reservas WHERE id_reserva = %s"
-        cursor.execute(query, (reservation_id,))
+        # Obtener el número de pasajeros y el ID del vuelo
+        cursor.execute("SELECT id_vuelo, num_pasajeros FROM reservas WHERE id_reserva = %s", (reservation_id,))
+        result = cursor.fetchone()
+        if not result:
+            tk.messagebox.showerror("Error", "Reserva no encontrada.")
+            return
+
+        id_vuelo, num_pasajeros = result
+
+        # Eliminar la reserva
+        cursor.execute("DELETE FROM reservas WHERE id_reserva = %s", (reservation_id,))
+
+        # Actualizar las plazas disponibles en la tabla vuelos
+        cursor.execute("UPDATE vuelos SET plazas_disponibles = plazas_disponibles + %s WHERE id_vuelo = %s",
+                       (num_pasajeros, id_vuelo))
+
         connection.commit()
 
     except Exception as e:
         tk.messagebox.showerror("Error", f"Error al cancelar la reserva de vuelo: {e}")
+        connection.rollback()
 
     finally:
         cursor.close()
@@ -98,12 +111,13 @@ def delete_hotel_reservation(reservation_id):
     cursor = connection.cursor()
 
     try:
-        query = "DELETE FROM reservas_hoteles WHERE id_reserva_hotel = %s"
-        cursor.execute(query, (reservation_id,))
+        # Eliminar la reserva
+        cursor.execute("DELETE FROM reservas_hoteles WHERE id_reserva_hotel = %s", (reservation_id,))
         connection.commit()
 
     except Exception as e:
         tk.messagebox.showerror("Error", f"Error al cancelar la reserva de hotel: {e}")
+        connection.rollback()
 
     finally:
         cursor.close()
@@ -145,3 +159,5 @@ def open_reservations_window(parent):
 def close_reservations_window(reservations_window, parent):
     reservations_window.destroy()  # Cierra la ventana de reservas
     parent.deiconify()  # Muestra nuevamente el dashboard
+
+
