@@ -114,3 +114,4 @@ def open_dashboard(username):
     dashboard_window.geometry('{}x{}+{}+{}'.format(width, height, x, y))
     
     dashboard_window.mainloop()
+
